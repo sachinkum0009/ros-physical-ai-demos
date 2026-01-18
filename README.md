@@ -46,3 +46,15 @@ ros2 launch pai_bringup so_arm_gz_bringup.launch.py
 ```
 
 For instructions on training a policy and running inference see [this guide](./docs/so_arm_demo.md).
+
+#### Inference for Gazebo
+
+```bash
+hf download yadunund/act_move_to_cube_2
+
+python3 pai_bringup/scripts/lerobot_inference_node --ros-args     -p policy_path:=/home/asus/.cache/huggingface/hub/models--yadunund--act_move_to_cube_2/snapshots/bfa6347ecab75be35663806b6115156ef4ae1ecf     -p camera_topic:=/camera     -p command_topic:=/forward_position_controller/commands     -p task:="Move to blue cube"     -p device:=cuda
+
+python3 pai_bringup/scripts/lerobot_inference_node --ros-args     -p policy_path:=/home/asus/.cache/huggingface/hub/models--sachinkum0009--act_so101_test/snapshots/3b3629379d9110f172a26a2bbbc2d0e1c44d7e56     -p camera_topic:=/camera     -p command_topic:=/forward_position_controller/commands     -p task:="Move to blue cube"     -p device:=cuda
+
+/home/asus/.cache/huggingface/hub/models--sachinkum0009--act_so101_test/snapshots/3b3629379d9110f172a26a2bbbc2d0e1c44d7e56
+```

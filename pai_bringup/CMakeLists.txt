@@ -13,10 +13,14 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
+# Install Python modules
+ament_python_install_package(${PROJECT_NAME})
+
 # Install Python scripts and wrappers
 install(
   PROGRAMS
     scripts/lerobot_inference_node
+    scripts/lerobot_infer_node.py
   DESTINATION lib/${PROJECT_NAME}
 )
 
