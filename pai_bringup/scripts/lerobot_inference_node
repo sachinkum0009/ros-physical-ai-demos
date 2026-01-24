@@ -44,6 +44,9 @@ from lerobot.configs.policies import PreTrainedConfig, PolicyFeature
 from lerobot.datasets.utils import build_dataset_frame
 from lerobot.utils.utils import get_safe_torch_device
 
+# Approx Time Synchronizer
+from message_filters import ApproximateTimeSynchronizer, Subscriber
+
 
 class LeRobotInferenceNode(Node):
     """ROS 2 node that runs LeRobot policy inference on camera data."""
@@ -63,6 +66,7 @@ class LeRobotInferenceNode(Node):
         self.declare_parameter('camera_width', 640)
         self.declare_parameter('camera_height', 480)
         self.declare_parameter('use_degrees_training', False)  # Was the model trained with use_degrees=True?
+        self.declare_parameter('wrist_camera_topic', '/wrist_camera')
 
         # Get parameters
         self.policy_path = self.get_parameter('policy_path').get_parameter_value().string_value
@@ -86,12 +90,24 @@ class LeRobotInferenceNode(Node):
         self._load_policy()
 
         # Create subscribers and publishers
-        self.camera_sub = self.create_subscription(
-            Image,
-            self.camera_topic,
-            self.camera_callback,
-            10
-        )
+        # self.camera_sub = self.create_subscription(
+        #     Image,
+        #     self.camera_topic,
+        #     self.camera_callback,
+        #     10
+        # )
+
+        # Get wrist camera topic parameter
+        self.wrist_camera_topic = self.get_parameter('wrist_camera_topic').get_parameter_value().string_value
+        
+        # Create message_filters subscribers (ROS 2 signature: Subscriber(node, msg_type, topic))
+        camera1_sub = Subscriber(self, Image, self.camera_topic)
+        camera2_sub = Subscriber(self, Image, self.wrist_camera_topic)
+
+        # ApproximateTimeSynchronizer signature in ROS 2: (subscribers, queue_size, slop)
+        ts = ApproximateTimeSynchronizer([camera1_sub, camera2_sub], 10, 0.1)
+        ts.registerCallback(self.camera_callback)
+
 
         self.command_pub = self.create_publisher(
             Float64MultiArray,
@@ -175,7 +191,7 @@ class LeRobotInferenceNode(Node):
             self.get_logger().error(f'Failed to load policy: {str(e)}')
             raise e
 
-    def camera_callback(self, msg: Image):
+    def camera_callback(self, msg1: Image, msg2: Image):
         """Callback function for camera data."""
         current_time = self.get_clock().now()
 
@@ -188,14 +204,15 @@ class LeRobotInferenceNode(Node):
 
         try:
             # Convert ROS Image to OpenCV format
-            cv_image = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding='rgb8')
+            cv_image = self.cv_bridge.imgmsg_to_cv2(msg1, desired_encoding='rgb8')
+            wrist_cv_image = self.cv_bridge.imgmsg_to_cv2(msg2, desired_encoding='rgb8')
 
             # Resize image to expected dimensions if needed
             if cv_image.shape[:2] != (self.camera_height, self.camera_width):
                 cv_image = cv2.resize(cv_image, (self.camera_width, self.camera_height))
 
             # Run inference
-            joint_positions = self._run_inference(cv_image)
+            joint_positions = self._run_inference(cv_image, wrist_cv_image)
 
             # Publish command
             self._publish_command(joint_positions)
@@ -203,12 +220,12 @@ class LeRobotInferenceNode(Node):
         except Exception as e:
             self.get_logger().error(f'Error in camera callback: {str(e)}')
 
-    def _run_inference(self, image: np.ndarray) -> np.ndarray:
+    def _run_inference(self, image: np.ndarray, image2: np.ndarray) -> np.ndarray:
         """Run policy inference on the input image."""
         # Create observation dictionary directly with the expected keys
         observation = {
             'observation.images.front': image,  # Vision input
-            'observation.images.wrist': image,
+            'observation.images.wrist': image2,
             'observation.state': self.joint_values # np.zeros(6, dtype=np.float32)  # Dummy joint state
         }
 
