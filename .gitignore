@@ -12,5 +12,8 @@ install/*
 log/*
 
 # External repos imported via vcs
-SO-ARM100/
-huggingface/
+external/*
+
+# Recorded datasets
+datasets/*
+datasets_lerobot/*
