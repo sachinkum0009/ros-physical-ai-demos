@@ -37,6 +37,23 @@ pip install torch==2.7.0+cu128 torchaudio==2.7.0+cu128 torchcodec==0.4.0 torchvi
 pip install lerobot==0.3.3
 ```
 
+Using Pixi (recommended for this repo)
+
+Pixi provides an isolated environment with ROS 2 Kilted and LeRobot. From the repo root:
+
+```bash
+# Install base environment (ROS 2 Kilted, colcon, etc.)
+pixi install
+
+# Install ML dependencies (detects RTX 5090 and installs PyTorch cu128)
+pixi run install-ml-deps
+
+# Build the workspace
+pixi run build
+```
+
+The `install-ml-deps` task detects your GPU and installs the appropriate PyTorch (e.g. cu128 for RTX 5090). See [DEVELOPMENT.md](DEVELOPMENT.md) for more details.
+
 #### Calibration
 
 ```bash
@@ -177,10 +194,10 @@ python3 pai_bringup/scripts/lerobot_inference_node --ros-args \
 The `Float64MultiArray` contains joint positions in the following order:
 1. `shoulder_pan_joint`
 2. `shoulder_lift_joint`
-3. `elbow_joint`
-4. `wrist_pitch_joint`
+3. `elbow_flex_joint`
+4. `wrist_flex_joint`
 5. `wrist_roll_joint`
-6. `jaw_joint`
+6. `gripper_joint`
 
 ## Implementation Notes
 
@@ -213,10 +230,10 @@ LeRobot SO101 training uses different units than ROS 2:
 joint_limits_deg = {
     'shoulder_pan_joint': (-180, 180),      # Full rotation
     'shoulder_lift_joint': (-90, 90),       # Shoulder lift range
-    'elbow_joint': (-135, 135),              # Elbow range
-    'wrist_pitch_joint': (-90, 90),         # Wrist pitch
+    'elbow_flex_joint': (-135, 135),        # Elbow range
+    'wrist_flex_joint': (-90, 90),          # Wrist flex
     'wrist_roll_joint': (-180, 180),        # Wrist roll full rotation
-    'jaw_joint': (0, 100)                   # Gripper 0-100%
+    'gripper_joint': (0, 100)               # Gripper 0-100%
 }
 ```
 

@@ -1,17 +1,16 @@
 <?xml version="1.0" ?>
-<robot xmlns:xacro="http://wiki.ros.org/xacro" name="gz_so_100arm">
-  <!-- robot name parameter -->
-  <xacro:arg name="ros2_control_hardware_type" default="gazebo" />
+<robot xmlns:xacro="http://wiki.ros.org/xacro" name="gz_so_101arm">
   <xacro:arg
     name="ros2_control_file"
-    default="$(find so_arm100_description)/control/so_arm100.ros2_control.xacro"
+    default="$(find so_arm101_description)/control/so_arm101.ros2_control.xacro"
   />
   <xacro:arg
     name="urdf_file"
-    default="$(find so_arm100_description)/urdf/so_arm100_macro.xacro"
+    default="$(find so_arm101_description)/urdf/so_arm101_macro.xacro"
   />
   <xacro:arg name="usb_port" default="/dev/LeRobotFollower" />
   <xacro:arg name="prefix" default="" />
+  <xacro:arg name="color" default="0.2 0.7 0.85 1.0" />
 
   <!-- Pose arguments for robot positioning -->
   <xacro:arg name="x" default="0.0" />
@@ -21,21 +20,20 @@
   <xacro:arg name="pitch" default="0.0" />
   <xacro:arg name="yaw" default="0.0" />
 
-    <!-- Robot description -->
+  <!-- Robot description -->
   <xacro:include filename="$(arg urdf_file)" />
 
-  <!-- Create link fixed to the "world" -->
-  <link name="world" />
-
   <!-- Robot arm positioned in the world -->
-  <xacro:so_arm100 prefix="$(arg prefix)" />
-
-  <!-- Base joint fixes robot to the world with configurable pose -->
-  <joint name="world_to_robot" type="fixed">
-    <origin xyz="$(arg x) $(arg y) $(arg z)" rpy="$(arg roll) $(arg pitch) $(arg yaw)" />
-    <parent link="world" />
-    <child link="$(arg prefix)base" />
-  </joint>
+  <link name="world" />
+  <xacro:so_arm101 prefix="$(arg prefix)" 
+                   parent="world"
+                   color="$(arg color)"
+                   x="$(arg x)"
+                   y="$(arg y)"
+                   z="$(arg z)"
+                   roll="$(arg roll)"
+                   pitch="$(arg pitch)"
+                   yaw="$(arg yaw)" />
 
   <!-- parameters -->
   <xacro:arg name="simulation_controllers" default="" />
@@ -45,7 +43,7 @@
   <xacro:include filename="$(arg ros2_control_file)" />
   <xacro:ros2_control
     prefix="$(arg prefix)"
-    ros2_control_hardware_type="$(arg ros2_control_hardware_type)"
+    ros2_control_hardware_type="gazebo"
     usb_port="$(arg usb_port)"
   />
 
