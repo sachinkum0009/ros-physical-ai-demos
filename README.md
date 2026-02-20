@@ -65,4 +65,8 @@ python3 pai_bringup/scripts/lerobot_inference_node --ros-args     -p policy_path
 python3 pai_bringup/scripts/lerobot_inference_node --ros-args     -p policy_path:=/home/asus/.cache/huggingface/hub/models--sachinkum0009--act_so101_test/snapshots/3b3629379d9110f172a26a2bbbc2d0e1c44d7e56     -p camera_topic:=/camera     -p command_topic:=/forward_position_controller/commands     -p task:="Move to blue cube"     -p device:=cuda
 
 /home/asus/.cache/huggingface/hub/models--sachinkum0009--act_so101_test/snapshots/3b3629379d9110f172a26a2bbbc2d0e1c44d7e56
+
+python3 pai_bringup/scripts/lerobot_inference_node --ros-args     -p policy_path:=/home/asus/.cache/huggingface/hub/models--sachinkum0009--smolvla_toothbrush4/snapshots/0dc234376309d189c24c1212d863d3a5724811d8     -p camera_topic:=/camera     -p command_topic:=/forward_position_controller/commands     -p task:="Pick up blue cube"     -p device:=cuda
+
+/home/asus/.cache/huggingface/hub/models--sachinkum0009--smolvla_toothbrush4/snapshots/0dc234376309d189c24c1212d863d3a5724811d8
 ```

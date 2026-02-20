@@ -154,12 +154,14 @@ class LeRobotInferenceNode(Node):
             torch.from_numpy = patched_from_numpy
 
             # Try a simpler approach: load the ACT policy directly
-            from lerobot.policies.act.modeling_act import ACTPolicy
+            # from lerobot.policies.act.modeling_act import ACTPolicy
+            from lerobot.policies.smolvla.modeling_smolvla import SmolVLAPolicy
 
             # Load the policy directly from pretrained path - this should handle everything automatically
-            self.policy = ACTPolicy.from_pretrained(
-                self.policy_path,
-                local_files_only=True
+            self.policy = SmolVLAPolicy.from_pretrained(
+                pretrained_name_or_path="sachinkum0009/smolvla_toothbrush4"
+                # self.policy_path,
+                # local_files_only=True
             )
 
             # Restore the original function
@@ -255,6 +257,10 @@ class LeRobotInferenceNode(Node):
                 observation[name] = observation[name].unsqueeze(0)
                 observation[name] = observation[name].to(self.device)
 
+            self.get_logger().info("selected action")
+            # print(f"obervation: {observation.keys()}")
+            for key, val in observation.items():
+                self.get_logger().info(f"Key: {key}, Shape: {val.shape}, Range: [{val.min()}, {val.max()}]")
             # Compute the next action with the policy
             action = self.policy.select_action(observation)
 
